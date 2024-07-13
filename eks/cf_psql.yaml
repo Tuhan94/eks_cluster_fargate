@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for creating an Amazon RDS PostgreSQL serverless database
+
+Parameters:
+  DBName:
+    Type: String
+    Description: Name for the PostgreSQL database
+  DBUsername:
+    Type: String
+    Description: Username for the PostgreSQL database
+  DBPassword:
+    Type: String
+    Description: Password for the PostgreSQL database
+    NoEcho: true
+  VpcId:
+    Type: String
+    Description: VPC ID where the RDS DB will be deployed
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnets where the RDS DB will be deployed
+
+Resources:
+  ServerlessDB:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      EngineMode: serverless
+      DatabaseName: DBName
+      MasterUsername: DBUsername
+      MasterUserPassword: DBPassword
+      EnableHttpEndpoint: true
+      ScalingConfiguration:
+        AutoPause: true
+        MinCapacity: 1
+        MaxCapacity: 2
+      VpcSecurityGroupIds:
+        - DBSecurityGroup.GroupId
+      DBSubnetGroupName: DBSubnetGroup
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for PostgreSQL serverless database
+      VpcId: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '0.0.0.0/0'
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for PostgreSQL serverless database
+      SubnetIds: Subnets
+
+Outputs:
+  ServerlessDBEndpoint:
+    Description: Endpoint of the PostgreSQL serverless database
+    Value: ServerlessDB.Endpoint.Address
+  ServerlessDBName:
+    Description: Name of the PostgreSQL serverless database
+    Value: DBName
