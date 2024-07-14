@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calcom-api
+spec:
+  replicas: 1  # Adjust as needed
+  selector:
+    matchLabels:
+      app: calcom-api
+  template:
+    metadata:
+      labels:
+        app: calcom-api
+    spec:
+      containers:
+        - name: calcom-api
+          image: <docker-image-of-calcom-api>  # Replace with actual Docker image URL
+          ports:
+            - containerPort: 8080  # Adjust port as per your application
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://<db-username>:<db-password>@<db-host>:<db-port>/<db-name>"
+            # Add other environment variables as required
